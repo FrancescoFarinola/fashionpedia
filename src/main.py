@@ -19,8 +19,8 @@ def main(args):
 
     #Get paths of all image files
     print("Adding file paths to dataframe...")
-    id2filename_train = {i['id']: "train/" + i['file_name'] for i in train_data['images']}
-    id2filename_val = {i['id']: "test/" + i['file_name'] for i in val_data['images']} 
+    id2filename_train = {i['id']: "./train/" + i['file_name'] for i in train_data['images']}
+    id2filename_val = {i['id']: "./test/" + i['file_name'] for i in val_data['images']} 
     train_df['filename'] = [id2filename_train[row['image_id']] for i, row in train_df.iterrows()]
     val_df['filename'] = [id2filename_val[row['image_id']] for i, row in val_df.iterrows()]
     print("Added!")
@@ -28,7 +28,7 @@ def main(args):
     #Register custom train and test datasets is Detectron2 DatasetCatalog and MetadataCatalog
     categories, fp_metadata = register_datasets(train_data, train_df, val_data, val_df)
 
-    cfg = L.load("config.yaml") #Lazy initialization of the model parameters - necessary for new baseline models
+    cfg = L.load("./config.yaml") #Lazy initialization of the model parameters - necessary for new baseline models
     a = {"num_machines":1, "num_gpus":1} #Dictionary with additional parameters to initialize the detectron2 environment
 
     #Ovverride parameters passed as args
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # training iterations. Also, warmup_length.
     # LR is decreased at each milestone: starting from 0.001 then 0.0001 and finally 0.00001
     # Need to adjust the starting LR : start from 0.01 or 0.001? When milestones? How many epochs?
-    parser.add_argument("-b", "--batch_size", action="store", default=8, type=int, required=True)
+    parser.add_argument("-b", "--batch_size", action="store", default=2, type=int)
     parser.add_argument("-e", "--epochs", action="store", default=1)
     parser.add_argument("-w", "--workers", action="store", default=2, type=int) #useful just for preparing batches - doesnt affect other parameters
     args = parser.parse_args()

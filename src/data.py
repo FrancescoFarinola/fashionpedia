@@ -8,15 +8,15 @@ import numpy as np
 
 def get_data():
     # Load annotations from json files
-    with open("instances_attributes_train2020.json") as f:
+    with open("./data/instances_attributes_train2020.json") as f:
         train_data = json.load(f)
         f.close()
 
-    with open("instances_attributes_val2020.json") as f:
+    with open("./data/instances_attributes_val2020.json") as f:
         val_data = json.load(f)
         f.close()
 
-    with open("info_test2020.json") as f:
+    with open("./data/info_test2020.json") as f:
         test_data = json.load(f)
         f.close()
     return train_data, val_data, test_data
