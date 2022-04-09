@@ -110,20 +110,20 @@ def override_parameters(cfg, args, n):
     # Override parameters affected by batch_size, epochs and num_workers and initialize evaluator
     cfg.dataloader.train.total_batch_size = args.batch_size #Number of images per batch
     #Number of workers to pre-load batches - this has nothing to do with the number of iterations
-    cfg.dataloader.train.num_workers = cfg.dataloader.test.num_workers = args.workers 
+    #cfg.dataloader.train.num_workers = cfg.dataloader.test.num_workers = args.workers 
     #Set the number of iterations according to epochs and number of batches and consequently 
     #change the log, evaluation and checkpoint period according to # of iterations (save every epoch)
     one_epoch = int(n / args.batch_size) + 1
     cfg.train.max_iter = one_epoch * int(args.epochs)
-    cfg.train.log_period = int(one_epoch /100) #log ech 1% of each epoch - 100 logs per epoch
+    cfg.train.log_period = int(one_epoch /20) #log ech 5% of each epoch - 20 logs per epoch
     cfg.train.eval_period = one_epoch #evaluate after each epoch
     cfg.checkpointer = {'max_to_keep': 100, 'period': one_epoch} #save checkpoint at each epoch
 
     #LR multiplier
     #Change milestones and number of updates for step learning rate schedule
     cfg.lr_multiplier.scheduler.num_updates = one_epoch * int(args.epochs) #shiould be equal to number of iterations
-    # lower lr at epoch 15 and 25 so we have 15epochs at 0.01, 10 at 0.001 and 5 at 0.0001
-    cfg.lr_multiplier.scheduler.milestones = [one_epoch * 15 , one_epoch * 25]
+    # lower lr at 50% and 90% of training
+    cfg.lr_multiplier.scheduler.milestones = [int((one_epoch * int(args.epochs))/10*5) , int((one_epoch * int(args.epochs))/10*9)]
     cfg.lr_multiplier.warmup_length = 500/ (one_epoch * int(args.epochs)) #500 steps as warmup ont he whole training
     #Reinitialize evaluator to make it correctly work
     cfg.dataloader.evaluator = COCOEvaluator("fashionpedia_val", output_dir="./output") 

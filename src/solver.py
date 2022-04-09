@@ -19,7 +19,7 @@ def do_test(cfg, model):
         )
         return ret
 
-def do_train(cfg, a):
+def do_train(cfg, a, args):
     # Setup and initialize necessary variables
     default_setup(cfg, args = a) # Setup environment
     model = instantiate(cfg.model) #Instantiate model
@@ -37,11 +37,9 @@ def do_train(cfg, a):
          hooks.IterationTimer(),
          hooks.LRScheduler(optimizer=optim, scheduler=instantiate(cfg.lr_multiplier)),
          hooks.EvalHook(cfg.train.eval_period, lambda: do_test(cfg, model)),
-         hooks.BestCheckpointer(eval_period = cfg.train.eval_period, checkpointer = checkpointer, val_metric = 'segm/AP', mode='max'),
-         EarlyStop(checkpointer = checkpointer, eval_period= cfg.train.eval_period, patience=3, delta=0.1, val_metric='segm/AP'),
-         hooks.PeriodicWriter(
-            default_writers(cfg.train.output_dir, cfg.train.max_iter),
-            period=cfg.train.log_period)
+         hooks.BestCheckpointer(eval_period = cfg.train.eval_period, checkpointer = checkpointer, val_metric = 'segm/AP'),
+         EarlyStop(checkpointer = checkpointer, eval_period= cfg.train.eval_period, patience=args.patience, delta=args.delta, val_metric='segm/AP'),
+         hooks.PeriodicWriter(default_writers(cfg.train.output_dir, cfg.train.max_iter), period=cfg.train.log_period)
          if comm.is_main_process()
          else None,
          ]

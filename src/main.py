@@ -32,7 +32,7 @@ def main(args):
     #Ovverride parameters passed as args
     len_df = train_df['image_id'].unique().size #Number of unique images necessary to set max_iter, log
     cfg = override_parameters(cfg, args, len_df) 
-    do_train(cfg, a)
+    do_train(cfg, a, args)
 
 
 if __name__ == "__main__":
@@ -44,7 +44,9 @@ if __name__ == "__main__":
     # LR is decreased at each milestone: starting from 0.001 then 0.0001 and finally 0.00001
     # Need to adjust the starting LR : start from 0.01 or 0.001? When milestones? How many epochs?
     parser.add_argument("-b", "--batch_size", action="store", default=8, type=int)
-    parser.add_argument("-e", "--epochs", action="store", default=30)
-    parser.add_argument("-w", "--workers", action="store", default=4, type=int) #useful just for preparing batches - doesnt affect other parameters
+    parser.add_argument("-e", "--epochs", action="store", default=30, type=int)
+    parser.add_argument("-p", "--patience", action="store", default=3, type=int)
+    parser.add_argument("-d", "--delta", action="store", default=0.1, type=float)
+    #parser.add_argument("-w", "--workers", action="store", default=4, type=int) #useful just for preparing batches - doesnt affect other parameters
     args = parser.parse_args()
     main(args)
