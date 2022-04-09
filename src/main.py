@@ -3,8 +3,6 @@ from detectron2.config import LazyConfig as L
 from solver import do_train
 from data import get_data, register_datasets, override_parameters
 import argparse
-import torch
-import gc
 
 
 def main(args):
@@ -19,8 +17,8 @@ def main(args):
 
     #Get paths of all image files
     print("Adding file paths to dataframe...")
-    id2filename_train = {i['id']: "./train/" + i['file_name'] for i in train_data['images']}
-    id2filename_val = {i['id']: "./test/" + i['file_name'] for i in val_data['images']} 
+    id2filename_train = {i['id']: "./data/train/" + i['file_name'] for i in train_data['images']}
+    id2filename_val = {i['id']: "./data/test/" + i['file_name'] for i in val_data['images']} 
     train_df['filename'] = [id2filename_train[row['image_id']] for i, row in train_df.iterrows()]
     val_df['filename'] = [id2filename_val[row['image_id']] for i, row in val_df.iterrows()]
     print("Added!")
@@ -33,11 +31,7 @@ def main(args):
 
     #Ovverride parameters passed as args
     len_df = train_df['image_id'].unique().size #Number of unique images necessary to set max_iter, log
-    cfg = override_parameters(cfg, args, len_df)
-
-    #Clear cuda cache and use garbage collector before starting training 
-    torch.cuda.empty_cache()
-    gc.collect()
+    cfg = override_parameters(cfg, args, len_df) 
     do_train(cfg, a)
 
 
@@ -49,8 +43,8 @@ if __name__ == "__main__":
     # training iterations. Also, warmup_length.
     # LR is decreased at each milestone: starting from 0.001 then 0.0001 and finally 0.00001
     # Need to adjust the starting LR : start from 0.01 or 0.001? When milestones? How many epochs?
-    parser.add_argument("-b", "--batch_size", action="store", default=2, type=int)
-    parser.add_argument("-e", "--epochs", action="store", default=1)
-    parser.add_argument("-w", "--workers", action="store", default=2, type=int) #useful just for preparing batches - doesnt affect other parameters
+    parser.add_argument("-b", "--batch_size", action="store", default=8, type=int)
+    parser.add_argument("-e", "--epochs", action="store", default=30)
+    parser.add_argument("-w", "--workers", action="store", default=4, type=int) #useful just for preparing batches - doesnt affect other parameters
     args = parser.parse_args()
     main(args)

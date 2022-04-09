@@ -1,5 +1,6 @@
 import logging
-from detectron2.evaluation import inference_on_dataset, print_csv_format
+import torch
+import gc
 from detectron2.config import instantiate
 from detectron2.utils import comm
 from detectron2.checkpoint import DetectionCheckpointer
@@ -8,19 +9,17 @@ from detectron2.engine import (
     default_setup,
     default_writers,
     hooks)
-
+from customized import EarlyStop, inference
 
 def do_test(cfg, model):
     # Test function called by the EvalHook when current_iter = eval_period
     if "evaluator" in cfg.dataloader:
-        ret = inference_on_dataset(
+        ret = inference(
             model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
         )
-        print_csv_format(ret)
         return ret
 
 def do_train(cfg, a):
-    
     # Setup and initialize necessary variables
     default_setup(cfg, args = a) # Setup environment
     model = instantiate(cfg.model) #Instantiate model
@@ -34,25 +33,21 @@ def do_train(cfg, a):
     checkpointer = DetectionCheckpointer(model, cfg.train.output_dir, trainer=trainer,) #Initialize checkpointer
 
     #Define the training routine - https://detectron2.readthedocs.io/en/latest/_modules/detectron2/engine/hooks.html for more
-    trainer.register_hooks(
-        [   
-            hooks.IterationTimer(), #Track the time spent for each iteration and get a summary at the end
-            hooks.LRScheduler(optimizer=optim, scheduler=instantiate(cfg.lr_multiplier)),
-            hooks.PeriodicCheckpointer(checkpointer, **cfg.train.checkpointer) #A checkpointer that can save/load model as well as extra checkpointable objects.
-            if comm.is_main_process()
-            else None,
-            hooks.EvalHook(cfg.train.eval_period, lambda: do_test(cfg, model)),
-            hooks.PeriodicWriter( #Writes events on log_period 
-                default_writers(cfg.train.output_dir, cfg.train.max_iter),
-                period=cfg.train.log_period,
-            )
-            if comm.is_main_process()
-            else None,
-        ]
-    )
-    checkpointer.resume_or_load(cfg.train.init_checkpoint, resume=True) #Resume=True to load pre-trained or checkpoint file
-    if checkpointer.has_checkpoint():
-        start_iter = trainer.iter + 1
-    else:
-        start_iter = 0
-    trainer.train(start_iter, cfg.train.max_iter)
+    routine = [
+         hooks.IterationTimer(),
+         hooks.LRScheduler(optimizer=optim, scheduler=instantiate(cfg.lr_multiplier)),
+         hooks.EvalHook(cfg.train.eval_period, lambda: do_test(cfg, model)),
+         hooks.BestCheckpointer(eval_period = cfg.train.eval_period, checkpointer = checkpointer, val_metric = 'segm/AP', mode='max'),
+         EarlyStop(checkpointer = checkpointer, eval_period= cfg.train.eval_period, patience=3, delta=0.1, val_metric='segm/AP'),
+         hooks.PeriodicWriter(
+            default_writers(cfg.train.output_dir, cfg.train.max_iter),
+            period=cfg.train.log_period)
+         if comm.is_main_process()
+         else None,
+         ]
+    trainer.register_hooks(routine)
+    checkpointer.resume_or_load(cfg.train.init_checkpoint, resume=True) #Resume=True will load a checkpoint in the output dir if available
+
+    gc.collect()
+    torch.cuda.empty_cache()
+    trainer.train(0, cfg.train.max_iter)

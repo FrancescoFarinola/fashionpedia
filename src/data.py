@@ -122,9 +122,9 @@ def override_parameters(cfg, args, n):
     #LR multiplier
     #Change milestones and number of updates for step learning rate schedule
     cfg.lr_multiplier.scheduler.num_updates = one_epoch * int(args.epochs) #shiould be equal to number of iterations
-    # lower lr at 60% and 90% of training iterations
-    cfg.lr_multiplier.scheduler.milestones = [int((one_epoch * int(args.epochs))/10*6) , int((one_epoch * int(args.epochs))/10*9)]
-    cfg.lr_multiplier.warmup_length = 200/ (one_epoch * int(args.epochs))
+    # lower lr at epoch 15 and 25 so we have 15epochs at 0.01, 10 at 0.001 and 5 at 0.0001
+    cfg.lr_multiplier.scheduler.milestones = [one_epoch * 15 , one_epoch * 25]
+    cfg.lr_multiplier.warmup_length = 500/ (one_epoch * int(args.epochs)) #500 steps as warmup ont he whole training
     #Reinitialize evaluator to make it correctly work
     cfg.dataloader.evaluator = COCOEvaluator("fashionpedia_val", output_dir="./output") 
     return cfg

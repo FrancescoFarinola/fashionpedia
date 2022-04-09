@@ -128,7 +128,7 @@ model:
       thresholds: [0.5]
 optimizer:
   _target_: torch.optim.SGD
-  lr: 0.001
+  lr: 0.01
   momentum: 0.9
   params: {_target_: detectron2.solver.get_default_optimizer_params, weight_decay_norm: 0.0}
   weight_decay: 4.0e-05
@@ -140,7 +140,7 @@ lr_multiplier:
     num_updates: 10000
     values: [1.0, 0.1, 0.01]
   warmup_factor: 0.01
-  warmup_length: 0.004
+  warmup_length: 0.002
 train:
   amp: {enabled: true}
   checkpointer: {max_to_keep: 100, period: 2000}
