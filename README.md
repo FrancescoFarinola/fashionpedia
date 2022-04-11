@@ -6,6 +6,7 @@
 src
     ├── data.py
     ├── main.py
+    ├── customized.py
     └── solver.py
 ```
 
@@ -19,7 +20,8 @@ src
   - `override_parameters(cfg, args, n)` the main script gets batch_size, num_workers, number of epochs as command line arguments and several model parameters needs to be
       adjusted according to these, so this functions automatically calculates them and overrides default ones.
       
-`main.py` contains the script to be run. It accepts as command line arguments batch_size (number of images per batch), number of epochs and num_workers (affects
-pre-training, in particular each worker prepares a batch to be trained next - i.e. for augmentations)
+`main.py` contains the script to be run. It accepts as command line arguments batch_size (number of images per batch), number of epochs, learning rate and patience and delta for early stopping.
+
+`customized.py` contains the class EarlyStop and an inference functions with less logs
 
 `solver.py` contains the functions `do_train` and `do_test` which respectively define the training routine and test routine
