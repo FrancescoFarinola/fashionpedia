@@ -1,4 +1,5 @@
 import logging
+from tabnanny import check
 import torch
 import gc
 from detectron2.config import instantiate
@@ -45,7 +46,10 @@ def do_train(cfg, a, args):
          ]
     trainer.register_hooks(routine)
     checkpointer.resume_or_load(cfg.train.init_checkpoint, resume=True) #Resume=True will load a checkpoint in the output dir if available
-
+    if checkpointer.has_checkpoint():
+        start_iter = trainer.iter + 1
+    else:
+        start_iter = 0
     gc.collect()
     torch.cuda.empty_cache()
-    trainer.train(0, cfg.train.max_iter)
+    trainer.train(start_iter, cfg.train.max_iter)

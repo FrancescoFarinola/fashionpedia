@@ -119,6 +119,7 @@ def override_parameters(cfg, args, n):
     cfg.train.eval_period = one_epoch #evaluate after each epoch
     cfg.checkpointer = {'max_to_keep': 100, 'period': one_epoch} #save checkpoint at each epoch
 
+    cfg.optimizer.lr = args.lr
     #LR multiplier
     #Change milestones and number of updates for step learning rate schedule
     cfg.lr_multiplier.scheduler.num_updates = one_epoch * int(args.epochs) #shiould be equal to number of iterations

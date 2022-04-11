@@ -9,7 +9,7 @@ def main(args):
     #Load json files
     train_data, val_data, test_data = get_data()
     print('Loaded data')
-
+    
     #Create dataframes
     train_df = pd.DataFrame(train_data['annotations'])
     val_df = pd.DataFrame(val_data['annotations'])
@@ -45,8 +45,9 @@ if __name__ == "__main__":
     # Need to adjust the starting LR : start from 0.01 or 0.001? When milestones? How many epochs?
     parser.add_argument("-b", "--batch_size", action="store", default=8, type=int)
     parser.add_argument("-e", "--epochs", action="store", default=30, type=int)
-    parser.add_argument("-p", "--patience", action="store", default=3, type=int)
+    parser.add_argument("-p", "--patience", action="store", default=5, type=int)
     parser.add_argument("-d", "--delta", action="store", default=0.1, type=float)
+    parser.add_argument("-l", "--lr", action="store", default=0.01, type=float)
     #parser.add_argument("-w", "--workers", action="store", default=4, type=int) #useful just for preparing batches - doesnt affect other parameters
     args = parser.parse_args()
     main(args)

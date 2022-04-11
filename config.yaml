@@ -128,7 +128,7 @@ model:
       thresholds: [0.5]
 optimizer:
   _target_: torch.optim.SGD
-  lr: 0.001
+  lr: 0.01
   momentum: 0.9
   params: {_target_: detectron2.solver.get_default_optimizer_params, weight_decay_norm: 0.0}
   weight_decay: 4.0e-05
